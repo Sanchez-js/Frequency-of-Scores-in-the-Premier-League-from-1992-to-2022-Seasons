@@ -1,0 +1,114 @@
+---
+title: "Prem scoring history"
+author: "Jose Sanchez"
+date: "2023-01-07"
+output: html_document
+---
+
+```{r}
+
+rm(list = ls())
+
+```
+
+
+```{r}
+urls<- c("https://en.wikipedia.org/wiki/1992%E2%80%9393_FA_Premier_League", "https://en.wikipedia.org/wiki/1993%E2%80%9394_FA_Premier_League", "https://en.wikipedia.org/wiki/1994%E2%80%9395_FA_Premier_League", "https://en.wikipedia.org/wiki/1996%E2%80%9397_FA_Premier_League", "https://en.wikipedia.org/wiki/1997%E2%80%9398_FA_Premier_League", "https://en.wikipedia.org/wiki/1998%E2%80%9399_FA_Premier_League", "https://en.wikipedia.org/wiki/1999%E2%80%932000_FA_Premier_League", "https://en.wikipedia.org/wiki/2000%E2%80%9301_FA_Premier_League", "https://en.wikipedia.org/wiki/2001%E2%80%9302_FA_Premier_League", "https://en.wikipedia.org/wiki/2002%E2%80%9303_FA_Premier_League", "https://en.wikipedia.org/wiki/2003%E2%80%9304_FA_Premier_League", "https://en.wikipedia.org/wiki/2004%E2%80%9305_FA_Premier_League", "https://en.wikipedia.org/wiki/2005%E2%80%9306_FA_Premier_League", "https://en.wikipedia.org/wiki/2006%E2%80%9307_FA_Premier_League", "https://en.wikipedia.org/wiki/2007%E2%80%9308_Premier_League", "https://en.wikipedia.org/wiki/2008%E2%80%9309_Premier_League", "https://en.wikipedia.org/wiki/2009%E2%80%9310_Premier_League", "https://en.wikipedia.org/wiki/2010%E2%80%9311_Premier_League", "https://en.wikipedia.org/wiki/2011%E2%80%9312_Premier_League", "https://en.wikipedia.org/wiki/2012%E2%80%9313_Premier_League", "https://en.wikipedia.org/wiki/2013%E2%80%9314_Premier_League", "https://en.wikipedia.org/wiki/2014%E2%80%9315_Premier_League", "https://en.wikipedia.org/wiki/2015%E2%80%9316_Premier_League", "https://en.wikipedia.org/wiki/2016%E2%80%9317_Premier_League", "https://en.wikipedia.org/wiki/2017%E2%80%9318_Premier_League", "https://en.wikipedia.org/wiki/2018%E2%80%9319_Premier_League", "https://en.wikipedia.org/wiki/2019%E2%80%9320_Premier_League", "https://en.wikipedia.org/wiki/2020%E2%80%9321_Premier_League", "https://en.wikipedia.org/wiki/2021%E2%80%9322_Premier_League")
+```
+
+```{r}
+
+library(rvest)
+#funtion to get tables in site to find scoring table
+get_tables<-function(url) {
+  #read in webpage
+  page <- read_html(url)
+
+  # Extract the table from the page
+  tables <- html_table(html_nodes(page, "table"))
+  return(tables)
+}
+```
+
+```{r}
+#all the tables of all the wiki pages get stored into this data frame
+master_tables<-lapply(urls, get_tables)
+```
+
+```{r}
+#master_tables is a table of tables, we need to check each table to find the results table
+#oldprem is a shortened version of master_tables for which i think has the scores in the 6th table
+
+prem_scores<-list()
+# Iterate through the list
+for (i in 1:length(master_tables)) {
+  # Assign the 6th element of the sublist to a variable
+  prem_scores[[i]] <- master_tables[[i]][[6]]
+}
+```
+
+```{r}
+prem_scores[[5]]<-master_tables[[5]][[7]]
+prem_scores[[6]]<-master_tables[[6]][[7]]
+prem_scores[[7]]<-master_tables[[7]][[7]]
+prem_scores[[8]]<-master_tables[[8]][[7]]
+prem_scores[[9]]<-master_tables[[9]][[8]]
+prem_scores[[11]]<-master_tables[[11]][[8]]
+prem_scores[[18]]<-master_tables[[18]][[7]]
+prem_scores[[20]]<-master_tables[[20]][[7]]
+prem_scores[[27]]<-master_tables[[27]][[7]]
+```
+
+
+```{R}
+# test cleaning data
+# test<-prem_scores[1:3]
+# 
+# #go through each df and clean
+# scoresdf<-test[[1]]
+# 
+# #remove team names column
+# scoresdf_clean<-scoresdf[-1]
+# 
+# #create empty list so that all the scores are in list form instead of a table
+# s1scores<-list()
+# 
+# #iterate through the data table to make list
+# for(i in scoresdf_clean){
+#   s1scores<-c(s1scores,i)
+# }
+# #change tibble to list
+# s1scores<-as.character(s1scores)
+# 
+# #get rid of empty locations
+# s1scores<- s1scores[s1scores != ""]
+# 
+# #store count of each score as s1
+# s1<-table(s1scores)
+```
+
+```{r}
+#initiate where to store results without team names
+scores_only_seasons<-list()
+
+#remove team names from all seasons
+for(i in 1:length(prem_scores)){
+  scores_only_seasons[[i]]<-prem_scores[[i]][-1]
+}
+```
+
+```{r}
+#create empty list so that all the scores are in list form instead of a table
+scores_only_list<-unlist(scores_only_seasons)
+
+#get rid of empty locations
+clean_scores_only_list<- scores_only_list[scores_only_list != ""]
+
+#store count of each score as 
+prem_all_seasons_scoring_data<-table(clean_scores_only_list)
+```
+
+```{r}
+path_out = "C:/Users/jsanc/Desktop/R-projects/scoring_prem/"
+write.csv(prem_all_seasons_scoring_data,paste(path_out,'all_scores_prem_1992-2022_season',sep = ''))
+```
